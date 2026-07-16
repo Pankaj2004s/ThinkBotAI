@@ -1,28 +1,27 @@
-import "dotenv/config";
+import OpenAI from "openai";
 
-const getOpenAIAPIResponse = async(message) => {
-    const options = {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: "https://api.groq.com/openai/v1",
+});
+
+const getOpenAIAPIResponse = async (message) => {
+  try {
+    const response = await client.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "user",
+          content: message,
         },
-        body: JSON.stringify({
-            model: "gpt-4o-mini",
-            messages: [{
-                role: "user",
-                content: message
-            }]
-        })
-    };
+      ],
+    });
 
-    try {
-        const response = await fetch("https://api.openai.com/v1/chat/completions", options);
-        const data = await response.json();
-        return data.choices[0].message.content; //reply
-    } catch(err) {
-        console.log(err);
-    }
-}
+    return response.choices[0].message.content;
+  } catch (err) {
+    console.log(err);
+    return "Something went wrong.";
+  }
+};
 
 export default getOpenAIAPIResponse;
